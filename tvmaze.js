@@ -37,38 +37,10 @@ async function getShowsByTerm(term) {
   }
 
   console.log(showsOfSameName);
-    return showsOfSameName;
+
+  return showsOfSameName;
 
   }
-
-
-
-  //return showData;
-
-  // return showObject;
-
-    //
-//   return [
-//     {
-//       id: 1767,
-//       name: "The Bletchley Circle",
-//       summary:
-//         `<p><b>The Bletchley Circle</b> follows the journey of four ordinary
-//            women with extraordinary skills that helped to end World War II.</p>
-//          <p>Set in 1952, Susan, Millie, Lucy and Jean have returned to their
-//            normal lives, modestly setting aside the part they played in
-//            producing crucial intelligence, which helped the Allies to victory
-//            and shortened the war. When Susan discovers a hidden code behind an
-//            unsolved murder she is met by skepticism from the police. She
-//            quickly realises she can only begin to crack the murders and bring
-//            the culprit to justice with her former friends.</p>`,
-//       image:
-//           "http://static.tvmaze.com/uploads/images/medium_portrait/147/369403.jpg"
-//     }
-//   ]
-// }
-
-
 
 /** Given list of shows, create markup for each and to DOM */
 
@@ -86,7 +58,7 @@ function populateShows(shows) {
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
              <div><small>${show.summary}</small></div>
-             <button class="btn btn-outline-light btn-sm Show-getEpisodes">
+             <button id="${show.id}" class="btn btn-outline-light btn-sm Show-getEpisodes">
                Episodes
              </button>
            </div>
@@ -95,6 +67,15 @@ function populateShows(shows) {
       `);
 
     $showsList.append($show);  }
+}
+
+$("#showsList").on("click", "button", episodeList);
+
+function episodeList(event){
+  event.preventDefault;
+
+  getEpisodesOfShow(event.target);
+
 }
 
 
@@ -128,9 +109,9 @@ $searchForm.on("submit", async function (evt) {
  */
 
  async function getEpisodesOfShow(id) {
-  const paramenters = {params: {q:id}};
-  const episodeData = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
-  console.log(episodeData);
+  // const episodeData = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
+
+
 
 
 
