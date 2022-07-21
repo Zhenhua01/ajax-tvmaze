@@ -2,8 +2,8 @@
 
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
-const $searchForm = $("#searchForm");
 const $episodeList = $('#episodesList');
+const $searchForm = $("#searchForm");
 const TVMAZE_API_SEARCH = `http://api.tvmaze.com/search/shows?`;
 
 /** Given a search term, search for tv shows that match that query.
@@ -19,21 +19,21 @@ async function getShowsByTerm(term) {
   const showData = await axios.get(TVMAZE_API_SEARCH, parameters);
  // console.log(showData);
 
-  let showsOfSameName = [];
+  let showsOfSearchName = [];
 
-  for(let showResult of showData.data){
+  for(let result of showData.data){
     const showObject = {
-      id : showResult.show.id,
-      name: showResult.show.name,
-      summary : showResult.show.summary,
-      image: showResult.show.image ?
-              showResult.show.image.medium : 'https://tinyurl.com/tv-missing',
+      id : result.show.id,
+      name: result.show.name,
+      summary : result.show.summary,
+      image: result.show.image ?
+              result.show.image.medium : 'https://tinyurl.com/tv-missing',
     }
-    showsOfSameName.push(showObject);
+    showsOfSearchName.push(showObject);
   }
 
-  //console.log(showsOfSameName);
-  return showsOfSameName;
+  //console.log(showsOfSearchName);
+  return showsOfSearchName;
   }
 
 /** Given list of shows, create markup for each and to DOM */
@@ -91,10 +91,10 @@ $("#showsList").on("click", "button", showEpisodeList);
 async function showEpisodeList(event){
   event.preventDefault();
 
-  const episodesData = await getEpisodesOfShow(event.target.id);
+  const episodesList = await getEpisodesOfShow(event.target.id);
 
   $episodeList.empty();
-  populateEpisodes(episodesData);
+  populateEpisodes(episodesList);
 }
 
 /** Given a show ID, get from API and return (promise) array of episodes:
@@ -107,12 +107,12 @@ async function showEpisodeList(event){
   //console.log(episodesData);
   let episodesList = [];
 
-  for(let episodeInfo of episodesData.data){
+  for(let result of episodesData.data){
     const episodeObject = {
-      id : episodeInfo.id,
-      name: episodeInfo.name,
-      season : episodeInfo.season,
-      number: episodeInfo.number,
+      id : result.id,
+      name: result.name,
+      season : result.season,
+      number: result.number,
     }
     episodesList.push(episodeObject);
   }
@@ -126,13 +126,13 @@ async function showEpisodeList(event){
  * reveals episode list area
 */
 
-function populateEpisodes(episodes) {
+function populateEpisodes(episodesList) {
 
-  for (let episode of episodes) {
-    const episodeItem = $(`<li> ${episode.name}
+  for (let episode of episodesList) {
+    const episodeInfo = $(`<li> ${episode.name}
     (Season: ${episode.season}, Number: ${episode.number})</li>`);
 
-    $episodeList.append(episodeItem);
+    $episodeList.append(episodeInfo);
   }
 
   $episodesArea.show();
