@@ -3,8 +3,8 @@
 const $showsList = $("#showsList");
 const $episodesArea = $("#episodesArea");
 const $searchForm = $("#searchForm");
-const TVMAZE_SHOWID = `http://api.tvmaze.com/shows/`;
-
+const $episodeList = $('#episodesList');
+const TVMAZE_API_SEARCH = `http://api.tvmaze.com/search/shows?`;
 
 /** Given a search term, search for tv shows that match that query.
  *
@@ -14,32 +14,26 @@ const TVMAZE_SHOWID = `http://api.tvmaze.com/shows/`;
  */
 
 async function getShowsByTerm(term) {
-  // ADD: Remove placeholder & make request to TVMaze search shows API.
-
-  const TVMAZE_API_SEARCH = `http://api.tvmaze.com/search/shows?`;
-
-
-  const parameters = { params: {q:term}};
+  const parameters = { params: { q: term } };
 
   const showData = await axios.get(TVMAZE_API_SEARCH, parameters);
  // console.log(showData);
 
   let showsOfSameName = [];
 
-  for(let instance of showData.data){
+  for(let showResult of showData.data){
     const showObject = {
-      id : instance.show.id,
-      name: instance.show.name,
-      summary : instance.show.summary,
-      image: instance.show.image.medium
+      id : showResult.show.id,
+      name: showResult.show.name,
+      summary : showResult.show.summary,
+      image: showResult.show.image ?
+              showResult.show.image.medium : 'https://tinyurl.com/tv-missing',
     }
     showsOfSameName.push(showObject);
   }
 
-  console.log(showsOfSameName);
-
+  //console.log(showsOfSameName);
   return showsOfSameName;
-
   }
 
 /** Given list of shows, create markup for each and to DOM */
@@ -53,7 +47,7 @@ function populateShows(shows) {
          <div class="media">
            <img
               src="${show.image}"
-              alt="https://tinyurl.com/tv-missing"
+              alt=""
               class="w-25 me-3">
            <div class="media-body">
              <h5 class="text-primary">${show.name}</h5>
@@ -69,55 +63,77 @@ function populateShows(shows) {
     $showsList.append($show);  }
 }
 
-$("#showsList").on("click", "button", episodeList);
-
-function episodeList(event){
-  event.preventDefault;
-
-  getEpisodesOfShow(event.target);
-
-}
-
-
 /** Handle search form submission: get shows from API and display.
  *    Hide episodes area (that only gets shown if they ask for episodes)
  */
 
 async function searchForShowAndDisplay() {
   const term = $("#searchForm-term").val();
-  const shows = await getShowsByTerm(term); //array
+  const shows = await getShowsByTerm(term); //array of show objects
 
-
-
-
-  // let id = shows.data[0].show.id;
-  // getEpisodesOfShow(id);
-
-  //console.log(id);
   $episodesArea.hide();
   populateShows(shows);
 }
+
+/** Event listener on submit button to search for shows and display results */
 
 $searchForm.on("submit", async function (evt) {
   evt.preventDefault();
   await searchForShowAndDisplay();
 });
 
+/** Event listener on 'Episodes' button to display episodes list */
+$("#showsList").on("click", "button", showEpisodeList);
+
+/** Handles retrieving of episodes list by clicked button ID, gets list from
+ * API, updates list to episodes area, and display results
+ */
+async function showEpisodeList(event){
+  event.preventDefault();
+
+  const episodesData = await getEpisodesOfShow(event.target.id);
+
+  $episodeList.empty();
+  populateEpisodes(episodesData);
+}
 
 /** Given a show ID, get from API and return (promise) array of episodes:
  *      { id, name, season, number }
  */
 
  async function getEpisodesOfShow(id) {
-  // const episodeData = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
+  const episodesData = await axios.get(`http://api.tvmaze.com/shows/${id}/episodes`);
 
+  //console.log(episodesData);
+  let episodesList = [];
 
+  for(let episodeInfo of episodesData.data){
+    const episodeObject = {
+      id : episodeInfo.id,
+      name: episodeInfo.name,
+      season : episodeInfo.season,
+      number: episodeInfo.number,
+    }
+    episodesList.push(episodeObject);
+  }
 
-
-
+  //console.log(episodesList);
+  return episodesList;
  }
 
-/** Write a clear docstring for this function... */
+/** Given episodes object data, creates an episodes list, and appends the
+ * episode's name, season, and episode number to the DOM,
+ * reveals episode list area
+*/
 
-// function populateEpisodes(episodes) { }
+function populateEpisodes(episodes) {
 
+  for (let episode of episodes) {
+    const episodeItem = $(`<li> ${episode.name}
+    (Season: ${episode.season}, Number: ${episode.number})</li>`);
+
+    $episodeList.append(episodeItem);
+  }
+
+  $episodesArea.show();
+ }
